@@ -14,6 +14,6 @@ confirm() {
     esac
 }
 
-confirm "Install GIT?' && sudo apt install --dry-run git
+confirm "Install GIT?" && sudo apt install --dry-run git
 
 exit 0;

@@ -19,7 +19,8 @@ if [ $ncolors -ge 8 ]; then
 fi
 ## END Colors
 
-echo "${bold} => Installing GIT${normal}"
+echo "${bold} => Installing GIT..${normal}"
 sudo apt install git
+echo "${bold}${green} ! SUCCESS.${normal}"
 
-exit 0;
+exit 0

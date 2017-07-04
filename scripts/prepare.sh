@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## Color stuff
 ncolors=$(tput colors)

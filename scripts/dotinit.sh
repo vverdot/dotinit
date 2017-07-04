@@ -1,5 +1,11 @@
 #!/bin/bash
 
+if [ -z "$DOT_DIR" ]; then
+	DIR="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
+else
+	DIR="$HOME/$DOT_DIR"
+fi
+
 usage() {
 cat <<EOF
 Usage: dotinit [options] command ...

@@ -105,7 +105,7 @@ echo
 msg "[dot]init succesfully installed!"
 
 act "Execute dotinit --help"
-dotinit
+dotinit --help
 check
 
 cleanup

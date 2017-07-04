@@ -4,7 +4,7 @@
 
 Requirements
 ------------
-*(was successfully tested with)*
+*(was successfully tested with..)*
 * Debian 9
 * ca-certificates
 
@@ -12,7 +12,7 @@ Requirements
 Install
 -------
 
-Download and run the [prepare.sh](https://github.com/vverdot/dotfiles/blob/master/scripts/prepare.sh) script.
+Download and run the [prepare.sh](https://github.com/vverdot/dotinit/blob/master/scripts/prepare.sh) script.
 ```
 ./prepare.sh
 ```
@@ -21,5 +21,6 @@ Download and run the [prepare.sh](https://github.com/vverdot/dotfiles/blob/maste
 
 One-liner bootstrap command (**use at your own risk**):
 ```
-bash <( wget -qO - https://verdot.fr/.init )
+bash <( wget -qO - https://verdot.fr/.init 
+
 ```

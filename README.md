@@ -19,11 +19,10 @@ Download and run the [prepare.sh](https://github.com/vverdot/dotinit/blob/master
 
 One-liner bootstrap command (**use at your own risk**):
 ```
-bash <( wget -qO - https://verdot.fr/.init 
+bash <( wget -qO - https://verdot.fr/.init )
 
 ```
 
 ## Options
 
-**[dot]init install directory**
-Set the env variable DOT_DIR to change the install directory name (default is `.dotinit`)
+**[dot]init install directory** : Set the env variable `DOT_DIR` to change the installation directory (default is `.dotinit`)

@@ -1,10 +1,12 @@
 #!/bin/bash
 
-DOTINIT_HOME="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
+#DOTINIT="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
+
+HOME_DIR="${DOTINIT:-"$HOME/.dotinit"}"
 VERSION="1.0.0"
 
 usage() {
-echo "[dot]init $VERSION - $DOTINIT_HOME"
+echo "[dot]init $VERSION - $HOME_DIR"
 cat <<EOF
 Usage: dotinit [options] command ...
 

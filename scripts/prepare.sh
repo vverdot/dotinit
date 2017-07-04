@@ -11,10 +11,10 @@
 
 ## VARS
 
-DOT_DIR="${DOTINIT_DIR:-.dotinit}"
+INSTALL_DIR="${DOTINIT:-"$HOME/.dotinit"}"
 GIT_REPO="https://github.com/vverdot/dotinit.git"
 SCRIPT_NAME="[dot]init prepare"
-INSTALL_DIR="$HOME/$DOT_DIR"
+#INSTALL_DIR="$HOME/$DOT_DIR"
 ACTION=""
 
 
@@ -97,15 +97,15 @@ cd "$INSTALL_DIR"
 git clone "$GIT_REPO" "$INSTALL_DIR"
 check
 
-act "Add dotinit to path"
-sudo ln -sf "${INSTALL_DIR}/scripts/dotinit.sh" "/usr/local/bin/dotinit"
-check
+#act "Add dotinit to path"
+#sudo ln -sf "${INSTALL_DIR}/scripts/dotinit.sh" "/usr/local/bin/dotinit"
+#check
 
 echo
 msg "[dot]init succesfully installed!"
 
-act "Execute dotinit --help"
-dotinit --help
+act "Execute dotinit.sh --help"
+bash ./script/dotinit.sh --help
 check
 
 cleanup

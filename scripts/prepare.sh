@@ -97,15 +97,15 @@ cd "$INSTALL_DIR"
 git clone "$GIT_REPO" "$INSTALL_DIR"
 check
 
-#act "Add dotinit to path"
-#sudo ln -sf "${INSTALL_DIR}/scripts/dotinit.sh" "/usr/local/bin/dotinit"
-#check
+act "Add dotinit to path"
+ln -sf "${INSTALL_DIR}/scripts/dotinit.sh" "${INSTALL_DIR}/dotinit"
+check
 
 echo
 msg "[dot]init succesfully installed!"
 
-act "Execute dotinit.sh --help"
-bash ./script/dotinit.sh --help
+act "Execute dotinit --help"
+"$INSTALL_DIR/dotinit" --help
 check
 
 cleanup

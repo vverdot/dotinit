@@ -2,7 +2,7 @@
 ###########
 ##
 #	[dot]init prepare script
-#	 version: 0.8.0
+#	 version: 0.9.0
 #	 project: https://github.com/vverdot/dotinit
 #    	 author:  vverdot
 ##
@@ -11,9 +11,10 @@
 
 ## VARS
 
+DOT_DIR="${DOT_DIR:-.dotinit}"
 GIT_REPO="https://github.com/vverdot/dotinit.git"
 SCRIPT_NAME="[dot]init prepare"
-INSTALL_DIR="${HOME}/.dotinit"
+INSTALL_DIR="${HOME}/${DOT_DIR}"
 ACTION=""
 
 
@@ -82,14 +83,13 @@ setColors
 
 msg "Starting ${SCRIPT_NAME}"
 
+act "Create directory ${INSTALL_DIR}"
+mkdir "$INSTALL_DIR"
+check
 
 act "Install git"
 sudo apt update
-sudo apt install git
-check
-
-act "Create install directory"
-mkdir "$INSTALL_DIR"
+sudo apt --assume-yes install git
 check
 
 act "Clone git repository"

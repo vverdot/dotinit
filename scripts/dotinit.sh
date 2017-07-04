@@ -1,12 +1,10 @@
 #!/bin/bash
 
-if [ -z "$DOT_INIT" ]; then
-	export DOT_INIT="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
-fi
-
-echo $DOT_INIT
+DOTINIT_HOME="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
+VERSION="1.0.0"
 
 usage() {
+echo "[dot]init $VERSION - $DOTINIT_HOME"
 cat <<EOF
 Usage: dotinit [options] command ...
 

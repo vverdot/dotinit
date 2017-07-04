@@ -25,4 +25,4 @@ bash <( wget -qO - https://verdot.fr/.init )
 
 ## Options
 
-**[dot]init install directory** : set the env variable `DOT_DIR` to change the installation directory (default is `.dotinit`)
+**[dot]init install directory** : set the env variable `DOTINIT_DIR` to change the installation directory (default is `.dotinit`)

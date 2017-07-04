@@ -1,11 +1,25 @@
-# [dot]init
+# [dot]init -- Work In Progress
 .dotfiles manager tool (meant for personnal use).
+
+
+Requirements
+------------
+*(was successfully tested with)*
+* Debian 9
+* ca-certificates
+
 
 Install
 -------
 
-To start the installation process, download and run the [prepare.sh](https://github.com/vverdot/dotfiles/blob/master/scripts/prepare.sh) script.
-> ./prepare.sh
+Download and run the [prepare.sh](https://github.com/vverdot/dotfiles/blob/master/scripts/prepare.sh) script.
+```
+./prepare.sh
+```
 
-One-liner to bootstrap the install (**use at your own risk**):
-> bash <( wget -qO - https://verdot.fr/.init )
+**OR**
+
+One-liner bootstrap command (**use at your own risk**):
+```
+bash <( wget -qO - https://verdot.fr/.init )
+```

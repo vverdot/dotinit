@@ -14,7 +14,7 @@
 DOT_DIR="${DOT_INIT:-"$HOME/.dotinit"}"
 GIT_REPO="https://github.com/vverdot/dotinit.git"
 SCRIPT_NAME="[dot]init prepare"
-INSTALL_DIR="${HOME}/${DOT_DIR}"
+INSTALL_DIR="${DOT_DIR}"
 ACTION=""
 
 

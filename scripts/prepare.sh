@@ -2,7 +2,7 @@
 ###########
 ##
 #	[dot]init prepare script
-#	 version: 0.9.0
+#	 version: 0.10.0
 #	 project: https://github.com/vverdot/dotinit
 #    	 author:  vverdot
 ##
@@ -11,7 +11,7 @@
 
 ## VARS
 
-DOT_DIR="${DOT_DIR:-.dotinit}"
+DOT_DIR="${DOT_INIT:-"$HOME/.dotinit"}"
 GIT_REPO="https://github.com/vverdot/dotinit.git"
 SCRIPT_NAME="[dot]init prepare"
 INSTALL_DIR="${HOME}/${DOT_DIR}"

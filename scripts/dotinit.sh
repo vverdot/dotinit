@@ -1,10 +1,10 @@
 #!/bin/bash
 
-if [ -z "$DOT_DIR" ]; then
-	DIR="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
-else
-	DIR="$HOME/$DOT_DIR"
+if [ -z "$DOT_INIT" ]; then
+	export DOT_INIT="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
 fi
+
+echo $DOT_INIT
 
 usage() {
 cat <<EOF

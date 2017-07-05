@@ -3,7 +3,7 @@
 #DOTINIT="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
 
 HOME_DIR="${DOTINIT:-"$HOME/.dotinit"}"
-VERSION="1.0.0"
+VERSION="0.9.5"
 
 
 ## Utility functions
@@ -126,7 +126,12 @@ showScan() {
 		echo "${bold}${green} [+] $item ${normal}"
 	done
 
+
 	# List missing (installable) dotfiles
+	for dotitem in $(find $HOME_DIR/dots/$2/H -type f | sort); do
+		item=${dotitem#$HOME_DIR/dots/$2/H/}
+		echo "$bold$cyan [-] $item $normal"
+	done
 
 	return 0
 }
@@ -134,21 +139,21 @@ showScan() {
 
 scan() {
 
-	# if [ $(realpath $HOME/dotest) = $HOME/.dotinit/dotignore ]; then echo 'yes' ; fi
-
-	SCAN_CMD="find $HOME \( -type l -o -type f \)  | egrep '^.*' " 
-	EXCLUSIONS=" | egrep -v \"^${HOME_DIR}\" | egrep -v \"/.git(/|$)\" | egrep -v \"^${HOME}$\""
+	# Find files and links in $HOME starting with a dot and not ignored
+	
+	SCAN_CMD="find $HOME -maxdepth 1 \( -type l -o -type f \)  | egrep '^.*' " 
+	EXCLUSIONS=''
 	while read -r excl; do
-		EXCLUSIONS="$EXCLUSIONS | egrep -v \"^${HOME}/${excl}(/|$)\""
+		EXCLUSIONS="$EXCLUSIONS | egrep -v \"^${HOME}/${excl}$\""
     	done < "${HOME_DIR}/dotignore"
  
-	# build ignore string
-	# find $HOME | egrep '^.*' | egrep -v "^${HOME_DIR}" | egrep -v "/.git(/|$)" | egrep -v "^${HOME}$"
+	FOUND=$(eval "$SCAN_CMD$EXCLUSIONS | sort")
 	
-	#while read -r file; do
-	#	echo $file
-	#done < 
-	FOUND=$(eval "$SCAN_CMD$EXCLUSIONS")
+	# Find
+	
+
+
+	#Show result	
 	showScan "$FOUND" "${1:-default}"
 	
 	return 0

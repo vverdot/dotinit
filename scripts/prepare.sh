@@ -97,7 +97,7 @@ cd "$INSTALL_DIR"
 git clone "$GIT_REPO" "$INSTALL_DIR"
 check
 
-act "Add dotinit to path"
+act "Create 'dotinit' shortcut"
 ln -sf "${INSTALL_DIR}/scripts/dotinit.sh" "${INSTALL_DIR}/dotinit"
 check
 

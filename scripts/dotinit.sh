@@ -33,8 +33,11 @@ cat <<EOF
 Usage: dotinit [options] command ...
 
 Commands:
-  scan <dotfiles|packages>
-  	scan home directory dotfiles or installed packages
+  scan [what] 
+  	[what] = 'packages' or 'dotfiles' or 'all' or ''
+	 'packages' : scan manually installed packages
+	 'dotfiles' : scan home dotfiles
+	 'all' | '' : scan both
 
   install [what] [profile]
   	[what] = 'packages' or 'dotfiles' or 'all' or ''
@@ -46,7 +49,7 @@ Commands:
 
 Options:
   --help	: display command usage
-  --unattended	: non-interactive mode (will answer "yes" if asked)
+  --assume-yes	: non-interactive mode (will answer "yes" if asked)
   --dry-run 	: only simulate
 EOF
 }
@@ -56,13 +59,16 @@ usage_error() {
 	echo "dotinit: ${1:-'Unexpected Error'}"
 	echo "Try 'dotinit --help' for more information."
 	exit 1
-
 }
+
+
+## Install functions
 
 installPackages() {
 	if [ $# -eq 1 ]; then
 		if [ -f "$1" ]; then
 			sudo apt install $DRY_RUN $UNATTEND $(xargs <$1)
+			return $?
 		else
 			usage_error "file $1 not found"
 		fi
@@ -93,13 +99,62 @@ install() {
 	if [ $# -ge 1 ]; then
 		case "$1" in
 			"packages") installPackages "$HOME_DIR/dots/${2:-default}/packages.lst" ; return $? ;;
-			"dotfiles") echo 'install dotfiles' ; return $? ;;
-			"all") echo 'install both' ; return $? ;;
+			"dotfiles") echo 'install dotfiles not yet implemented' ; return $? ;;
+			"all") echo 'install both not yet implemented' ; return $? ;;
 			*) usage_error ;;
 		esac
 	fi
+
 }
 
+
+## Scan functions
+
+showScan() {
+	for dotitem in $1; do
+		item=${dotitem#$HOME/}
+		
+		if [ -L $dotitem ] ; then
+			if [ "$(realpath $dotitem)" = "$HOME_DIR/dots/$2/H/$item" ] ; then
+				echo "${bold} [x] $item ${normal}"
+			else
+				echo "${bold}${red} [!] $item ${normal}"
+			fi
+			continue
+		fi
+
+		echo "${bold}${green} [+] $item ${normal}"
+	done
+
+	# List missing (installable) dotfiles
+
+	return 0
+}
+
+
+scan() {
+
+	# if [ $(realpath $HOME/dotest) = $HOME/.dotinit/dotignore ]; then echo 'yes' ; fi
+
+	SCAN_CMD="find $HOME \( -type l -o -type f \)  | egrep '^.*' " 
+	EXCLUSIONS=" | egrep -v \"^${HOME_DIR}\" | egrep -v \"/.git(/|$)\" | egrep -v \"^${HOME}$\""
+	while read -r excl; do
+		EXCLUSIONS="$EXCLUSIONS | egrep -v \"^${HOME}/${excl}(/|$)\""
+    	done < "${HOME_DIR}/dotignore"
+ 
+	# build ignore string
+	# find $HOME | egrep '^.*' | egrep -v "^${HOME_DIR}" | egrep -v "/.git(/|$)" | egrep -v "^${HOME}$"
+	
+	#while read -r file; do
+	#	echo $file
+	#done < 
+	FOUND=$(eval "$SCAN_CMD$EXCLUSIONS")
+	showScan "$FOUND" "${1:-default}"
+	
+	return 0
+}
+
+## BEGIN SCRIPT
 
 setColors
 
@@ -107,7 +162,7 @@ if [ $# -lt 1 ]; then
 	usage_error
 fi
 
-OPTS=$(getopt --shell bash --name dotinit --long unattended,dry-run,help --options f -- "$@")
+OPTS=$(getopt --shell bash --name dotinit --long assume-yes,dry-run,help,no-legend --options f -- "$@")
 
 eval set -- "$OPTS"
 
@@ -116,6 +171,7 @@ eval set -- "$OPTS"
 F_FORCE=0
 UNATTEND=''
 DRY_RUN=''
+F_LEGEND=1
 
 # Extract options and argumrents
 while true ; do
@@ -123,7 +179,8 @@ while true ; do
 		--help) usage ; exit 0 ;;
 		--) shift ; break ;;
 		-f) F_FORCE=1 ; shift ;;
-		--unattended) UNATTEND='--assume-yes' ; shift ;;
+		--no-legend) F_LEGEND=0 ; shift ;;
+		--assume-yes) UNATTEND='--assume-yes' ; shift ;;
 		--dry-run) DRY_RUN='--dry-run' ; shift ;;
 		*) usage_error ;;
 	esac
@@ -138,8 +195,15 @@ shift
 
 case "$CMD" in
 	install) install "$@" ;;
+	scan) scan "$@" ;;
 	*) usage_error ;;
 esac
 
+if [ $? -ne 0 ]; then
+	echo "[dot]init $CMD failed."
+	exit 1
+fi
+
 exit 0
 
+## END SCRIPT

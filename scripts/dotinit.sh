@@ -62,7 +62,33 @@ usage_error() {
 }
 
 
+## Backup functions
+
+backupDotfile() {
+	F_ORIG="$HOME/$1"
+	BAK_HOME="$HOME_DIR/backup/H"
+	if [ ! -f "$F_ORIG" ] ; then
+		echo "Invalid file $F_ORIG for backup"
+		return 1
+	fi
+
+	if [[ $DRY_RUN ]] ; then
+		echo "$bold [would do]$normal cp $F_ORIG $BAK_HOME/$1"
+	else
+		cp "$F_ORIG" "$BAK_HOME/$1"
+		if [ $? -eq 0 ] ; then
+			echo "$bold [backup]$normal $1"
+		else
+			echo "Backup failed for $1"
+			return 1
+		fi
+	fi
+
+	return 0
+}
+
 ## Install functions
+
 
 installDotfiles() {
 
@@ -104,7 +130,26 @@ installDotfiles() {
 		else
 			if [ ! -L "$HOME/$item" ] ; then
 				# File exists already; need to force it
-				echo "$bold [skipped]$normal $HOME/$item"
+				if [[ $FORCE ]] ; then
+					backupDotfile $item
+					if [ ! $? -eq 0 ] ; then
+						return 1
+					else
+						if [[ $DRY_RUN ]] ; then
+							echo "$bold [would do]$normal ln -sf $dotitem $HOME/$item"
+						else
+							ln -sf $dotitem $HOME/$item
+							if [ $? -eq 0 ] ; then
+								echo "$bold$green [installed]$normal $HOME/$item"
+							else
+								echo "$bold$red [failed]$normal ln -sf $dotitem $HOME/$item"
+								return 1
+							fi
+						fi
+					fi
+				else
+					echo "$bold [skipped]$normal $HOME/$item"
+				fi
 			else
 				# Link exists
 				if ! [ "$(realpath $HOME/$item)" = "$dotitem" ] ; then
@@ -253,13 +298,13 @@ if [ $# -lt 1 ]; then
 	usage_error
 fi
 
-OPTS=$(getopt --shell bash --name dotinit --long assume-yes,dry-run,help,no-legend --options f -- "$@")
+OPTS=$(getopt --shell bash --name dotinit --long assume-yes,dry-run,help,no-legend,force --options f -- "$@")
 
 eval set -- "$OPTS"
 
 # Set Flags
 
-F_FORCE=0
+FORCE=''
 UNATTEND=''
 DRY_RUN=''
 F_LEGEND=1
@@ -269,7 +314,7 @@ while true ; do
 	case "$1" in
 		--help) usage ; exit 0 ;;
 		--) shift ; break ;;
-		-f) F_FORCE=1 ; shift ;;
+		-f|--force) FORCE=1 ; shift ;;
 		--no-legend) F_LEGEND=0 ; shift ;;
 		--assume-yes) UNATTEND='--assume-yes' ; shift ;;
 		--dry-run) DRY_RUN='--dry-run' ; shift ;;

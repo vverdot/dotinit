@@ -3,7 +3,7 @@
 #DOTINIT="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
 
 HOME_DIR="${DOTINIT:-"$HOME/.dotinit"}"
-VERSION="0.9.5"
+VERSION="0.10.1"
 
 
 ## Utility functions
@@ -47,10 +47,15 @@ Commands:
 	 ''	    : list available profiles
   	[profile]='default' if omitted
 
+  revert
+  	uninstall all profiles and restore backups
+
 Options:
   --help	: display command usage
   --assume-yes	: non-interactive mode (will answer "yes" if asked)
   --dry-run 	: only simulate
+  --force	: will replace existing files (backups are created)
+  --no-legend	: do not display legend
 EOF
 }
 
@@ -87,6 +92,121 @@ backupDotfile() {
 	return 0
 }
 
+uninstallDotfile() {
+	FILENAME="$1"
+	PROFILE="$2"
+
+	# Is it a valid file to uninstall?
+	if ! [ -e "$HOME/$FILENAME" -a -L "$HOME/$FILENAME" ] ; then
+		#nothing to do (just notify for bad links)
+		if [ -L "$HOME/$FILENAME" ] ; then
+			echo "$bold [ignored]$normal $item"
+		fi
+		return 0
+	fi
+
+	# Test if it is handled by [dot]init
+	FILE_ORIG="$(realpath $HOME/$FILENAME)"
+	[[ "$FILE_ORIG" =~ ^"$HOME_DIR/dots/$PROFILE/H/" ]] || { echo "$bold [skipped]$normal $item" ; return 1 ; }
+
+	if [[ $DRY_RUN ]] ; then
+		echo "$bold [would do]$normal rm -f $HOME/$FILENAME"
+	else
+		rm -f "$HOME/$FILENAME"
+		if ! [ "$?" -eq 0 ] ; then
+			return 1
+		fi
+	fi
+
+	restoreDotfile $FILENAME
+
+	if ! [ $? -eq 0 ] ; then
+		if ! [[ $DRY_RUN ]] ; then
+			echo "$bold [removed]$normal $FILENAME "
+	       	fi
+	fi
+
+	return 0
+}
+
+restoreDotfile() {
+	FILENAME="$1"
+	FILEBAK="$HOME_DIR/backup/H/$1"
+	
+	# Test if a backup exists
+	test -f "$FILEBAK" ||  return 1 ;
+
+	# Test if destination is empty
+	if ! [ -e "$HOME/$FILENAME" ]; then
+		
+		if [[ $DRY_RUN ]] ; then
+			echo "$bold [would do]$normal mv $FILEBAK $HOME/$FILENAME"
+		else
+			mv "$FILEBAK" "$HOME/$FILENAME"
+			if ! [ $? -eq 0 ] ; then
+			       return 1
+		       	fi
+			echo "$bold$green [restored]$normal $FILENAME"
+		fi
+	else
+		echo "File $HOME/$FILENAME already exists."
+		return 1
+	fi
+
+	return 0
+}
+
+
+revert() {
+	:
+}
+
+uninstallDotfiles() {
+	PROFILE=${1:-default}
+
+	# Check if profile is valid
+	if [ ! -d "$HOME_DIR/dots/$PROFILE" ]; then
+		echo "Profile $PROFILE not found."
+		return 1
+	fi
+
+	DOT_HOME="$HOME_DIR/dots/$PROFILE/H"
+	# List potential dotfiles
+	for dotitem in $(find $DOT_HOME -type f); do
+		item=${dotitem#$DOT_HOME/}
+		uninstallDotfile $item $PROFILE
+	done
+
+	return 0
+}
+
+uninstall() {
+	# Display existing profiles
+	if [ $# -eq 0 ]; then
+		echo "[dot]init profiles found:"
+	
+		profiles=$HOME_DIR/dots/*	
+
+		for profile in $profiles ; do
+			if [ -d "$profile" ]; then
+				desc="$(head -2 < $profile/README.md | tail -1)" 
+				echo "$bold  $( basename $profile ):${normal} $desc"
+			fi
+		done
+		return 0
+	fi
+
+	# Single command
+	if [ $# -ge 1 ]; then
+		case "$1" in
+			"packages") echo "uninstall packages not yet implemented" ; return 0 ;;
+			"dotfiles") shift ; uninstallDotfiles $@ ; return $? ;;
+			"all") echo 'uninstall both not yet implemented' ; return 0 ;;
+			*) usage_error ;;
+		esac
+	fi
+}
+
 ## Install functions
 
 
@@ -121,7 +241,7 @@ installDotfiles() {
 			else
 				ln -s $dotitem $HOME/$item
 				if [ $? -eq 0 ] ; then
-					echo "$bold$green [installed]$normal $HOME/$item"
+					echo "$bold$green [installed]$normal $item"
 				else
 					echo "$bold$red [failed]$normal ln -s $dotitem $HOME/$item"
 					return 1
@@ -140,7 +260,7 @@ installDotfiles() {
 						else
 							ln -sf $dotitem $HOME/$item
 							if [ $? -eq 0 ] ; then
-								echo "$bold$green [installed]$normal $HOME/$item"
+								echo "$bold$green [installed]$normal $item"
 							else
 								echo "$bold$red [failed]$normal ln -sf $dotitem $HOME/$item"
 								return 1
@@ -148,12 +268,12 @@ installDotfiles() {
 						fi
 					fi
 				else
-					echo "$bold [skipped]$normal $HOME/$item"
+					echo "$bold [skipped]$normal $item"
 				fi
 			else
 				# Link exists
 				if ! [ "$(realpath $HOME/$item)" = "$dotitem" ] ; then
-					echo "$bold [ignored]$normal $HOME/$item"
+					echo "$bold [ignored]$normal $item"
 				fi
 			fi
 		fi
@@ -332,6 +452,8 @@ shift
 case "$CMD" in
 	install) install "$@" ;;
 	scan) scan "$@" ;;
+	revert) revert "$@" ;;
+	uninstall) uninstall "$@" ;;
 	*) usage_error ;;
 esac
 

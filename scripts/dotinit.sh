@@ -123,14 +123,20 @@ showScan() {
 			continue
 		fi
 
-		echo "${bold}${green} [+] $item ${normal}"
+		if [ ! -f $HOME_DIR/dots/$2/H/$item ] ; then
+			echo "${bold}${green} [+] $item ${normal}"
+		else
+			echo "${bold}${yellow} [?] $item ${normal}"
+		fi
 	done
 
 
 	# List missing (installable) dotfiles
 	for dotitem in $(find $HOME_DIR/dots/$2/H -type f | sort); do
 		item=${dotitem#$HOME_DIR/dots/$2/H/}
-		echo "$bold$cyan [-] $item $normal"
+		if [ ! -e "$HOME/$item" -a ! -L "$HOME/$item" ] ; then
+			echo "$bold$cyan [-] $item $normal"
+		fi
 	done
 
 	return 0

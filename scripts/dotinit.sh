@@ -64,6 +64,59 @@ usage_error() {
 
 ## Install functions
 
+installDotfiles() {
+
+	PROFILE=${1:-default}
+
+	# Check if profile is valid
+	if [ ! -d "$HOME_DIR/dots/$PROFILE" ]; then
+		echo "Profile $PROFILE not found."
+		return 1
+	fi
+
+	DOT_HOME="$HOME_DIR/dots/$PROFILE/H"
+	# List missing (installable) dotfiles
+	for dotitem in $(find $DOT_HOME -type f); do
+		item=${dotitem#$DOT_HOME/}
+
+		if [ ! -e "$HOME/$item" -a ! -L "$HOME/$item" ] ; then
+			DIRNAME=$(dirname "$item")
+			
+			if [ ! $DIRNAME = "." ] ; then
+				if [[ $DRY_RUN ]] ; then
+					echo "$bold [would do]$normal mkdir -p $HOME/$DIRNAME"
+				else
+					mkdir -p $HOME/$DIRNAME
+				fi
+			fi
+
+			if [[ $DRY_RUN ]] ; then
+				echo "$bold [would do]$normal ln -s $dotitem $HOME/$item"
+			else
+				ln -s $dotitem $HOME/$item
+				if [ $? -eq 0 ] ; then
+					echo "$bold$green [installed]$normal $HOME/$item"
+				else
+					echo "$bold$red [failed]$normal ln -s $dotitem $HOME/$item"
+					return 1
+				fi
+			fi
+		else
+			if [ ! -L "$HOME/$item" ] ; then
+				# File exists already; need to force it
+				echo "$bold [skipped]$normal $HOME/$item"
+			else
+				# Link exists
+				if ! [ "$(realpath $HOME/$item)" = "$dotitem" ] ; then
+					echo "$bold [ignored]$normal $HOME/$item"
+				fi
+			fi
+		fi
+	done
+
+	return 0
+}
+
 installPackages() {
 	if [ $# -eq 1 ]; then
 		if [ -f "$1" ]; then
@@ -99,7 +152,7 @@ install() {
 	if [ $# -ge 1 ]; then
 		case "$1" in
 			"packages") installPackages "$HOME_DIR/dots/${2:-default}/packages.lst" ; return $? ;;
-			"dotfiles") echo 'install dotfiles not yet implemented' ; return $? ;;
+			"dotfiles") shift ; installDotfiles $@ ; return $? ;;
 			"all") echo 'install both not yet implemented' ; return $? ;;
 			*) usage_error ;;
 		esac
@@ -117,7 +170,7 @@ showScan() {
 	fi
 	
 	if [ $F_LEGEND -eq 1 ] ; then
-		echo "Comparing $HOME dotfiles with [dot]init ${PROFILE:-<new>} profile"
+		echo "Comparing $bold$HOME$normal dotfiles with [dot]init profile $bold${PROFILE:-<new>}$normal:"
 		echo "[x] installed, [+] new, [-] missing, [?] duplicate, [!] conflicted"
 	fi
 
@@ -162,6 +215,7 @@ showScan() {
 			item=${dotitem#$HOME_DIR/dots/$2/H/}
 			if [ ! -e "$HOME/$item" -a ! -L "$HOME/$item" ] ; then
 				echo "$bold$cyan [-] $item $normal"
+			#TODO handle other cases
 			fi
 		done
 	fi

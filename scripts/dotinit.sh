@@ -111,15 +111,40 @@ install() {
 ## Scan functions
 
 showScan() {
+	unset PROFILE
+	if [ -d "$HOME_DIR/dots/$2" ] ; then
+		PROFILE=$2
+	fi
+	
+	if [ $F_LEGEND -eq 1 ] ; then
+		echo "Comparing $HOME dotfiles with [dot]init ${PROFILE:-<new>} profile"
+		echo "[x] installed, [+] new, [-] missing, [?] duplicate, [!] conflicted"
+	fi
+
 	for dotitem in $1; do
 		item=${dotitem#$HOME/}
 		
 		if [ -L $dotitem ] ; then
+
+			# if no profile, then all links are conflicts
+			if ! [[ $PROFILE ]] ; then
+				echo "${bold}${red} [!] $item ${normal}"
+				continue
+			fi
+
 			if [ "$(realpath $dotitem)" = "$HOME_DIR/dots/$2/H/$item" ] ; then
 				echo "${bold} [x] $item ${normal}"
 			else
 				echo "${bold}${red} [!] $item ${normal}"
 			fi
+			continue
+		fi
+
+		# if not a link, it is (almost) necessarily a regular file
+
+		# if no profile to compare, all files are new
+		if ! [[ $PROFILE ]] ; then
+			echo "${bold}${green} [+] $item ${normal}"
 			continue
 		fi
 
@@ -130,14 +155,16 @@ showScan() {
 		fi
 	done
 
-
-	# List missing (installable) dotfiles
-	for dotitem in $(find $HOME_DIR/dots/$2/H -type f | sort); do
-		item=${dotitem#$HOME_DIR/dots/$2/H/}
-		if [ ! -e "$HOME/$item" -a ! -L "$HOME/$item" ] ; then
-			echo "$bold$cyan [-] $item $normal"
-		fi
-	done
+	# cannot be missing files if no valid profile
+	if [[ $PROFILE ]] ; then
+		# List missing (installable) dotfiles
+		for dotitem in $(find $HOME_DIR/dots/$2/H -type f | sort); do
+			item=${dotitem#$HOME_DIR/dots/$2/H/}
+			if [ ! -e "$HOME/$item" -a ! -L "$HOME/$item" ] ; then
+				echo "$bold$cyan [-] $item $normal"
+			fi
+		done
+	fi
 
 	return 0
 }
@@ -157,7 +184,6 @@ scan() {
 	
 	# Find
 	
-
 
 	#Show result	
 	showScan "$FOUND" "${1:-default}"

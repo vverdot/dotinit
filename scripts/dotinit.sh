@@ -47,6 +47,16 @@ Commands:
 	 ''	    : list available profiles
   	[profile]='default' if omitted
 
+  uninstall [what] [profile]
+  	[what] = 'dotfiles' or 'profile' or ''
+	 'profile'  : entire remove links from provided profile (default: 'default')
+	 'dotfiles' : remove links from provided files, restore files if applicable
+	 ''	    : list available profiles
+  	[profile]='default' if omitted
+
+  update [profile] FILE [FILE]*
+  	[profile] = the profile to update
+
   revert
   	uninstall all profiles and restore backups
 
@@ -298,6 +308,8 @@ installPackages() {
 
 install() {
 
+	#TODO shouldn't list existing profiles
+	# Display commands [what] or use only dotfiles
 	# Display existing profiles
 	if [ $# -eq 0 ]; then
 		echo "[dot]init profiles found:"
@@ -325,6 +337,73 @@ install() {
 
 }
 
+## Profile functions
+
+addDotfile() {
+	FILENAME="$1"
+	FILE="${1#$HOME/}"
+	FILEH="$HOME_DIR/dots/$2/H/$FILE"
+
+	if [ -e "$FILEH" ] ; then
+		#
+		if [ -f "$FILEH" ] ; then
+			if [[ $FORCE ]] ; then
+				if [[ $DRY_RUN ]] ; then
+					echo "$bold [would do]$normal cp -f $FILENAME $FILEH"
+				else
+					cp -f "$FILENAME" "$FILEH"
+					if ! [ $? -eq 0 ] ; then
+						return 1
+					fi
+#					TODO:
+					echo "$bold$green [added]$normal $FILE"
+				fi
+			else
+				echo "$bold [skipped]$normal $FILE"
+			fi
+		else
+			echo "$bold [ignored]$normal $FILE"
+		fi
+	else
+		if [[ $DRY_RUN ]] ; then
+			echo "$bold [would do]$normal cp $FILENAME $FILEH"
+		else
+			cp "$FILENAME" "$FILEH"
+			echo "$bold$green [added]$normal $FILE"
+		fi
+	fi
+
+	return 0	
+}
+
+
+update() {
+	if [ $# -le 1 ] ; then
+		usage_error "not enough arguments"
+	fi
+	
+	PROFILE=${1:-default}
+	if ! [ -d "$HOME_DIR/dots/$1" ] ; then
+		echo "$1 is not a valid profile."
+		return 1
+	fi
+	shift
+
+	echo "Updating profile $bold$PROFILE$normal.." 
+	for dotitem in $@ ; do
+
+		#TODO sanity check if file to add is in HOME && not in .dotinit
+		#TODO use exclusions
+		item=$(realpath $dotitem)
+		if ! [ -f "$dotitem" ] ; then
+			echo "$bold [ignored]$normal $item"
+		else
+			addDotfile "$item" $PROFILE
+		fi
+	done
+
+	return 0
+}
 
 ## Scan functions
 
@@ -381,6 +460,7 @@ showScan() {
 			if [ ! -e "$HOME/$item" -a ! -L "$HOME/$item" ] ; then
 				echo "$bold$cyan [-] $item $normal"
 			#TODO handle other cases
+			# LIST installed not in $HOME
 			fi
 		done
 	fi
@@ -451,9 +531,10 @@ shift
 
 case "$CMD" in
 	install) install "$@" ;;
-	scan) scan "$@" ;;
-	revert) revert "$@" ;;
 	uninstall) uninstall "$@" ;;
+	scan) scan "$@" ;;
+	update) update "$@" ;;
+	revert) revert "$@" ;;
 	*) usage_error ;;
 esac
 

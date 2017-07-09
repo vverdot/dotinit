@@ -1,4 +1,12 @@
 #!/bin/bash
+###########
+##
+#	[dot]init main script
+#	 version: 0.12.0-alpha
+#	 project: https://github.com/vverdot/dotinit
+#    	 author:  vverdot
+##
+###########
 
 #DOTINIT="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
 

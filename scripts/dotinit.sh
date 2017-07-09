@@ -395,27 +395,70 @@ update() {
 	echo "Updating profile $bold$PROFILE$normal.." 
 	for dotitem in $@ ; do
 
-		#TODO use exclusions
-		item=$(realpath $dotitem)
+		if ! [ -r "$dotitem" ] ; then
+			echo "$bold [ignored]$normal $dotitem -- cannot read"
+		       	continue	
+		fi
 
-		#Element valid iff regular file or folder, install_dir in $HOME and not in $HOME_DIR
+		#TODO use exclusions (do we?)
+		item="$(realpath $dotitem)"
+		hitem="$(realpath -s $dotitem)"
+
+		#Test if dotfile path is well in $HOME (and not in $HOME_DIR)
+		[[ "$hitem" =~ ^"$HOME/" ]] || { echo "$bold [ignored]$normal $hitem -- not in $HOME" ; continue ; }
+		[[ "$hitem" =~ ^"$HOME_DIR/" ]] && { echo "$bold [ignored]$normal $hitem -- invalid dotfile location" ; continue ; }
+
+		#Element valid iff regular file (or folder soon)
 		#TODO allow adding folders
-		if [ -f "$dotitem" ] ; then
+		if [ -f "$item" -a -r "$item" ] ; then
 			# Test if within HOME and not in HOME_DIR
-			[[ "$item" =~ ^"$HOME/" ]] || { echo "$bold [ignored]$normal $item not in $HOME" ; continue ; }
+			[[ "$item" =~ ^"$HOME/" ]] || { echo "$bold [ignored]$normal $item -- not in $HOME" ; continue ; }
+			[[ "$item" =~ ^"$HOME_DIR/dots/$PROFILE/" ]] && { echo "$bold [ignored]$normal $item -- already in profile" ; continue ; }
 			if [[ "$item" =~ ^"$HOME_DIR/" ]] ; then
-				#TODO exclude if already installed
 				if ! [[ "$item" =~ ^"$HOME_DIR/dots/".+"/H/" ]] ; then
-					echo "$bold [ignored]$normal invalid file location: $item"
+					echo "$bold [ignored]$normal -- invalid dotfile location: $item"
 					continue
 				fi
-				echo "$bold [special add] $item"
-				continue
 			fi
 
-			echo "$bold [added] $item"
+			#Copy file and store in profile
+			relative_hitem=${hitem#$HOME/}
+			DIRNAME="$(dirname $relative_hitem)"
+
+			#Test if file doesn't already exist
+			if [ -e "$HOME_DIR/dots/$PROFILE/H/$relative_hitem" ] ; then
+				if ! [[ $FORCE ]] ; then
+					echo "$bold$yellow [skipped]$normal $hitem -- file already exists"
+					continue
+				fi
+			fi
+			
+			#Create directory if required
+			if [ $DIRNAME != "." ] ; then
+				if [[ $DRY_RUN ]] ; then
+					echo "$bold [would do]$normal mkdir -p $HOME_DIR/dots/$PROFILE/H/$DIRNAME"
+				else
+					mkdir -p "$HOME_DIR/dots/$PROFILE/H/$DIRNAME"
+					if [ $? != 0 ] ; then
+						echo "$bold$red [failed]$normal $hitem -- couldn't create directory in profile"
+						continue
+					fi
+				fi
+			fi
+
+			#Copy file to profile
+			if [[ $DRY_RUN ]] ; then
+				echo "$bold [would do]$normal cp $item $HOME_DIR/dots/$PROFILE/H/$relative_hitem"
+			else
+				cp "$item" "$HOME_DIR/dots/$PROFILE/H/$relative_hitem"
+				if [ $? != 0 ] ; then
+					echo "$bold$red [failed]$normal $hitem -- couldn't copy to profile"
+					continue
+				fi
+				echo "$bold$green [added]$normal $hitem"
+			fi
 		else
-			echo "$bold [ignored]$normal $item not a valid dotfile"
+			echo "$bold [ignored]$normal $item -- invalid dotfile"
 		fi
 	done
 
@@ -437,7 +480,12 @@ showScan() {
 
 	for dotitem in $1; do
 		item=${dotitem#$HOME/}
-		
+
+		if [ ! -r "$dotitem" ] ; then
+			echo "${bold}${red} [!] $item ${normal} -- cannot read"
+			continue
+		fi
+
 		if [ -L $dotitem ] ; then
 
 			# if no profile, then all links are conflicts

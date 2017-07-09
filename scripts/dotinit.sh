@@ -2,6 +2,9 @@
 
 #DOTINIT="$( cd "$( dirname "$( realpath "$0" )" )/.." && pwd )"
 
+# TODO Store current profile in config
+# switch between profiles manually
+
 HOME_DIR="${DOTINIT:-"$HOME/.dotinit"}"
 VERSION="0.10.1"
 
@@ -378,7 +381,7 @@ addDotfile() {
 
 
 update() {
-	if [ $# -le 1 ] ; then
+	if [ $# -lt 2 ] ; then
 		usage_error "not enough arguments"
 	fi
 	
@@ -392,13 +395,27 @@ update() {
 	echo "Updating profile $bold$PROFILE$normal.." 
 	for dotitem in $@ ; do
 
-		#TODO sanity check if file to add is in HOME && not in .dotinit
 		#TODO use exclusions
 		item=$(realpath $dotitem)
-		if ! [ -f "$dotitem" ] ; then
-			echo "$bold [ignored]$normal $item"
+
+		#Element valid iff regular file or folder, install_dir in $HOME and not in $HOME_DIR
+		#TODO allow adding folders
+		if [ -f "$dotitem" ] ; then
+			# Test if within HOME and not in HOME_DIR
+			[[ "$item" =~ ^"$HOME/" ]] || { echo "$bold [ignored]$normal $item not in $HOME" ; continue ; }
+			if [[ "$item" =~ ^"$HOME_DIR/" ]] ; then
+				#TODO exclude if already installed
+				if ! [[ "$item" =~ ^"$HOME_DIR/dots/".+"/H/" ]] ; then
+					echo "$bold [ignored]$normal invalid file location: $item"
+					continue
+				fi
+				echo "$bold [special add] $item"
+				continue
+			fi
+
+			echo "$bold [added] $item"
 		else
-			addDotfile "$item" $PROFILE
+			echo "$bold [ignored]$normal $item not a valid dotfile"
 		fi
 	done
 
@@ -432,6 +449,7 @@ showScan() {
 			if [ "$(realpath $dotitem)" = "$HOME_DIR/dots/$2/H/$item" ] ; then
 				echo "${bold} [x] $item ${normal}"
 			else
+				# TODO display conflict reason
 				echo "${bold}${red} [!] $item ${normal}"
 			fi
 			continue

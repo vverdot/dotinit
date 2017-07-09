@@ -2,7 +2,7 @@
 ###########
 ##
 #	[dot]init main script
-#	 version: 0.12.0-alpha
+#	 version: 0.13-alpha
 #	 project: https://github.com/vverdot/dotinit
 #    	 author:  vverdot
 ##
@@ -14,7 +14,7 @@
 # switch between profiles manually
 
 HOME_DIR="${DOTINIT:-"$HOME/.dotinit"}"
-VERSION="0.10.1"
+VERSION="0.13-alpha"
 
 
 ## Utility functions

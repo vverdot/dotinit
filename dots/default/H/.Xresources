@@ -1,0 +1,21 @@
+! Dependencies
+
+#include ".Xresources.d/rxvt-solarized.dark"
+
+
+! My Stuff
+
+Xft.hinting:    	true
+Xft.hintstyle:  	hintslight
+Xft.dpi:        	96
+Xft.antialias:  	true
+Xft.rgba:       	rgb
+
+URxvt*scrollBar: 	false
+URxvt*font: 		xft:iosevka:style=light:antialias=true:pixelsize=14
+URxvt*geometry: 	90x20
+URxvt*loginShell:  	true
+URxvt*internalBorder:	5
+URxvt*dynamicColors: 	on
+URxvt*intensityStyles: 	false
+!URxvt*letterSpace: 	-1

@@ -520,9 +520,9 @@ showScan() {
 		fi
 
 		if [ ! -f $HOME_DIR/dots/$2/H/$item ] ; then
-			echo "${bold}${green} [+] $item ${normal}"
+			echo "$green [+] $item $normal"
 		else
-			echo "${bold}${yellow} [?] $item ${normal}"
+			echo "${yellow} [?] $item ${normal}"
 		fi
 	done
 

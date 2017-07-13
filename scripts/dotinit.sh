@@ -202,7 +202,10 @@ uninstallDotfiles() {
 }
 
 uninstall() {
+	# TODO: remove tree structure?
+
 	# Display existing profiles
+	# TODO: do not display that list here
 	if [ $# -eq 0 ]; then
 		echo "[dot]init profiles found:"
 	
@@ -233,6 +236,9 @@ uninstall() {
 
 installDotfiles() {
 
+	# TODO: create tree structure (create directories)
+
+	# Allow providing a list of files
 	PROFILE=${1:-default}
 
 	# Check if profile is valid
@@ -373,6 +379,7 @@ addDotfile() {
 				echo "$bold [skipped]$normal $FILE"
 			fi
 		else
+			# TODO: allow adding folders
 			echo "$bold [ignored]$normal $FILE"
 		fi
 	else
@@ -546,7 +553,8 @@ showScan() {
 scan() {
 
 	# Find files and links in $HOME starting with a dot and not ignored
-	
+	# TODO: allow scanning depth param
+
 	SCAN_CMD="find $HOME -maxdepth 1 \( -type l -o -type f \)  | egrep '^.*' " 
 	EXCLUSIONS=''
 	while read -r excl; do
